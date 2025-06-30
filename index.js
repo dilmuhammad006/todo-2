@@ -1,7 +1,9 @@
 const tasksList = document.getElementById("tasks-list");
 const form = document.getElementById("form");
 const tab = document.getElementById("tab");
+const searchInput = document.getElementById("searchInput");
 const sortBtn = document.getElementById("sort-btn");
+let searchValue = "";
 
 const actionTypes = {
   get: "get",
@@ -34,23 +36,29 @@ lsTasks ? (tasks = lsTasks) : useLSTasks(actionTypes.set, tasks);
 
 tab.addEventListener("click", (e) => {
   if (e.target.textContent === "Tasks") {
-    isArchivedTab = false
+    isArchivedTab = false;
     e.target.parentElement.children[0].classList.add("bg-slate-600");
     e.target.parentElement.children[1].classList.remove("bg-slate-600");
   }
 
   if (e.target.textContent === "Archived") {
-    isArchivedTab = true
+    isArchivedTab = true;
     e.target.parentElement.children[0].classList.remove("bg-slate-600");
     e.target.parentElement.children[1].classList.add("bg-slate-600");
   }
 
-  writeToDoc()
+  writeToDoc();
 });
 function writeToDoc() {
   tasksList.innerHTML = "";
 
-  let readyArray = tasks.filter((task) => isArchivedTab ? task.isArchived: !task.isArchived);
+  let readyArray = tasks
+    .filter((task) => (isArchivedTab ? task.isArchived : !task.isArchived))
+    .filter(
+      (task) =>
+        task.title.toLowerCase().includes(searchValue) ||
+        task.desc.toLowerCase().includes(searchValue)
+    );
   if (!readyArray.length) {
     tasksList.innerHTML =
       '<p class="text-center text-slate-500 text-lg border py-2 rounded border-slate-400">Empty</p>';
@@ -90,9 +98,11 @@ function writeToDoc() {
                 </button>
 
                   <button 
-                    onclick="changeStatus(${task.id}, 'isArchived', ${task.isArchived ? 'false': 'true'})"
+                    onclick="changeStatus(${task.id}, 'isArchived', ${
+      task.isArchived ? "false" : "true"
+    })"
                     class="bg-indigo-400 text-white px-2 py-1 rounded text-sm">
-                        ${!task.isArchived ? 'Archive' : 'UnArchive'}
+                        ${!task.isArchived ? "Archive" : "UnArchive"}
                 </button>
             </div>
         `;
@@ -146,3 +156,8 @@ function deleteTask(taskId) {
     useLSTasks(actionTypes.set, tasks);
   }
 }
+
+searchInput.addEventListener("keyup", (e) => {
+  searchValue = e.target.value.trim().toLowerCase();
+  writeToDoc();
+});
